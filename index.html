@@ -1,90 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Colorado Move Tracker</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(to right top, #fdfbfb, #ebedee);
-      color: #1e1e1e;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.85);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      border-radius: 16px;
-      padding: 2rem;
-      width: 90%;
-      max-width: 450px;
-      text-align: center;
-      backdrop-filter: blur(10px);
-    }
-
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 0.2em;
-    }
-
-    .subtitle {
-      font-size: 1rem;
-      color: #555;
-      margin-bottom: 1.5rem;
-    }
-
-    .progress-container {
-      background-color: #e0e0e0;
-      border-radius: 999px;
-      overflow: hidden;
-      height: 24px;
-      margin-bottom: 1rem;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .progress-bar {
-      height: 100%;
-      width: 35%; /* Update this */
-      background: linear-gradient(90deg, #ff6a00, #ee0979);
-      transition: width 0.4s ease-in-out;
-    }
-
-    .amounts {
-      font-size: 1rem;
-      font-weight: 500;
-      margin-bottom: 1.5rem;
-    }
-
-    .details {
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    .emoji {
-      font-size: 2rem;
-      margin-top: 0.8rem;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Colorado Move Savings Tracker</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: #f0f2f5;
+    margin: 0; padding: 2rem;
+    display: flex; justify-content: center; align-items: center; height: 100vh;
+  }
+  .container {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    width: 320px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+  .progress-bar-container {
+    background: #ddd;
+    border-radius: 999px;
+    height: 24px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6a00, #ee0979);
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 0.5rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  button {
+    background: #ee0979;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background: #ff6a00;
+  }
+  .status {
+    margin-top: 1rem;
+    color: #333;
+  }
+</style>
 </head>
 <body>
-  <div class="card">
-    <h1>Colorado Move Progress</h1>
-    <div class="subtitle">Every dollar brings us closer to the mountains 🏔️</div>
 
-    <div class="progress-container">
-      <div class="progress-bar"></div>
-    </div>
-
-    <div class="amounts">$1,400 saved of $4,000 goal</div>
-    <div class="details">That's 35% there! Keep going — you’ve got this.</div>
-    <div class="emoji">💰📦🚗</div>
+<div class="container">
+  <h1>Colorado Move Savings</h1>
+  <div id="status-text">Loading...</div>
+  <div class="progress-bar-container" aria-label="Savings progress">
+    <div class="progress-bar" id="progress-bar"></div>
   </div>
+  <div id="amount-text"></div>
+
+  <input type="number" id="input-amount" placeholder="Add amount saved" min="1" />
+  <button id="submit-btn">Add to Savings</button>
+
+  <div class="status" id="response-message"></div>
+</div>
+
+<script>
+  const API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL'; // paste your URL here
+
+  async function fetchData() {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      return data;
+    } catch(e) {
+      console.error('Fetch error:', e);
+      return null;
+    }
+  }
+
+  function updateUI({goal, saved}) {
+    const percent = Math.min(100, Math.round((saved / goal) * 100));
+    document.getElementById('progress-bar').style.width = percent + '%';
+    document.getElementById('amount-text').textContent = `$${saved} saved of $${goal} goal (${percent}%)`;
+    document.getElementById('status-text').textContent = 'Keep going, you got this!';
+  }
+
+  async function addAmount(amount) {
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({amount}),
+        headers: {'Content-Type': 'application/json'}
+      });
+      const data = await res.json();
+      return data;
+    } catch(e) {
+      console.error('Add amount error:', e);
+      return null;
+    }
+  }
+
+  async function refresh() {
+    const data = await fetchData();
+    if (data) {
+      updateUI(data);
+    } else {
+      document.getElementById('status-text').textContent = 'Failed to load data.';
+    }
+  }
+
+  document.getElementById('submit-btn').addEventListener('click', async () => {
+    const input = document.getElementById('input-amount');
+    const val = Number(input.value);
+    const responseEl = document.getElementById('response-message');
+    responseEl.textContent = '';
+
+    if (!val || val <= 0) {
+      responseEl.textContent = 'Please enter a positive number.';
+      return;
+    }
+
+    responseEl.textContent = 'Submitting...';
+
+    const res = await addAmount(val);
+    if (res && res.status === 'success') {
+      responseEl.textContent = `Added $${val} to savings!`;
+      input.value = '';
+      refresh();
+    } else {
+      responseEl.textContent = 'Error adding savings. Try again.';
+    }
+  });
+
+  // Initial load
+  refresh();
+</script>
+
 </body>
 </html>
