@@ -6,203 +6,172 @@
 <title>Move Savings Tracker</title>
 <style>
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 20px;
     background: #f5f7fa;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-    max-width: 420px;
-    margin: auto;
+    color: #111;
   }
   h1 {
+    text-align: center;
     font-weight: 600;
-    margin-bottom: 1.5rem;
-  }
-  .input-group {
     margin-bottom: 1rem;
-    width: 100%;
+    color: #0071e3;
   }
-  input[type="number"] {
-    width: 100%;
-    padding: 0.6rem 1rem;
-    font-size: 1.1rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-  }
-  button {
-    background-color: #007aff;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background-color 0.25s ease;
-    width: 100%;
-  }
-  button:hover {
-    background-color: #005ecb;
-  }
-  .progress-container {
-    width: 100%;
-    background: #ddd;
-    border-radius: 15px;
+  #progress-container {
+    background: #d0d4db;
+    border-radius: 20px;
     overflow: hidden;
-    height: 22px;
-    margin: 2rem 0 1rem;
-    box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.1);
+    height: 24px;
+    margin: 20px 0;
   }
-  .progress-bar {
+  #progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #007aff, #00d4ff);
+    background: linear-gradient(90deg, #00c6ff 0%, #0071e3 100%);
     width: 0%;
+    border-radius: 20px 0 0 20px;
     transition: width 0.5s ease;
   }
-  .progress-text {
+  #progress-text {
+    text-align: center;
     font-weight: 600;
-    font-size: 1.1rem;
-    text-align: center;
-    color: #007aff;
-    margin-bottom: 0.5rem;
+    color: #444;
+    margin-top: 8px;
   }
-  .status-message {
-    font-size: 0.9rem;
-    color: #cc0000;
-    min-height: 1.2em;
-    margin-top: 0.5rem;
-    text-align: center;
+  form {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
   }
-  @media (prefers-color-scheme: dark) {
-    body {
-      background: #121212;
-      color: #eee;
-    }
-    input[type="number"] {
-      background: #222;
-      border-color: #555;
-      color: #eee;
-    }
-    button {
-      background-color: #0a84ff;
-    }
-    button:hover {
-      background-color: #0066cc;
-    }
-    .progress-container {
-      background: #333;
-      box-shadow: inset 0 1px 3px rgb(255 255 255 / 0.1);
-    }
-    .progress-bar {
-      background: linear-gradient(90deg, #0a84ff, #5ac8fa);
-    }
-    .progress-text {
-      color: #0a84ff;
-    }
-    .status-message {
-      color: #ff6b6b;
-    }
+  input[type="number"] {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline-offset: 2px;
+  }
+  button {
+    padding: 8px 16px;
+    font-weight: 600;
+    background: #0071e3;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background: #005bb5;
+  }
+  #message {
+    margin-top: 12px;
+    text-align: center;
+    font-weight: 600;
+  }
+  #message.error {
+    color: #d32f2f;
+  }
+  #message.success {
+    color: #2e7d32;
   }
 </style>
 </head>
 <body>
+  <h1>Colorado Move Savings</h1>
 
-<h1>Move Savings Tracker</h1>
+  <div id="progress-container" aria-label="Savings progress bar">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="progress-text">Loading...</div>
 
-<div class="progress-text" id="progressText">Loading...</div>
-<div class="progress-container">
-  <div class="progress-bar" id="progressBar"></div>
-</div>
+  <form id="save-form">
+    <input type="number" step="0.01" min="0.01" placeholder="Add amount" required />
+    <button type="submit">Add</button>
+  </form>
 
-<div class="input-group">
-  <input
-    type="number"
-    id="amountInput"
-    placeholder="Enter amount saved"
-    min="0.01"
-    step="0.01"
-  />
-</div>
-
-<button id="addButton">Add Savings</button>
-
-<div class="status-message" id="statusMessage"></div>
+  <div id="message" role="alert" aria-live="polite"></div>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbztlCXfMd83xWHlc-pkXn28b2M8BVFOnOPylqoWs0oaJm7-E1mNsfweoVWMswQYXsNwOQ/exec";
-  const SAVING_GOAL = 4000; // Adjust goal as needed
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbztlCXfMd83xWHlc-pkXn28b2M8BVFOnOPylqoWs0oaJm7-E1mNsfweoVWMswQYXsNwOQ/exec';
+  const targetSavings = 3500; // Your goal: adjust as needed
 
-  const progressBar = document.getElementById("progressBar");
-  const progressText = document.getElementById("progressText");
-  const amountInput = document.getElementById("amountInput");
-  const addButton = document.getElementById("addButton");
-  const statusMessage = document.getElementById("statusMessage");
+  const progressBar = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress-text');
+  const messageBox = document.getElementById('message');
+  const form = document.getElementById('save-form');
+  const input = form.querySelector('input');
 
-  let savedTotal = 0;
-
-  // Update the progress bar UI based on savedTotal
-  function updateProgress() {
-    const percent = Math.min((savedTotal / SAVING_GOAL) * 100, 100);
-    progressBar.style.width = percent + "%";
-    progressText.textContent = `Saved $${savedTotal.toFixed(2)} of $${SAVING_GOAL.toFixed(2)} (${percent.toFixed(1)}%)`;
-  }
-
-  // Fetch total savings from Apps Script GET endpoint
-  async function fetchSavings() {
+  // Load progress from server
+  async function loadProgress() {
     try {
-      const response = await fetch(API_URL);
-      const result = await response.json();
-      if (result.status === "success" && typeof result.total === "number") {
-        savedTotal = result.total;
-        updateProgress();
-        statusMessage.textContent = "";
+      progressText.textContent = 'Loading...';
+      messageBox.textContent = '';
+      const response = await fetch(scriptURL);
+      const data = await response.json();
+      if(data.status === 'success') {
+        updateProgress(data.total);
       } else {
-        throw new Error(result.message || "Failed to fetch total");
+        progressText.textContent = 'Error loading progress.';
+        messageBox.textContent = data.message || 'Unknown error';
+        messageBox.className = 'error';
       }
     } catch (err) {
-      statusMessage.textContent = "Error loading progress.";
-      progressText.textContent = "Could not load progress.";
-      progressBar.style.width = "0%";
+      progressText.textContent = 'Error loading progress.';
+      messageBox.textContent = err.message;
+      messageBox.className = 'error';
     }
   }
 
-  // Add new savings via Apps Script POST endpoint
-  async function addSavings(amount) {
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount }),
-      });
-      const result = await response.json();
-      if (result.status === "success") {
-        statusMessage.textContent = "Savings added successfully!";
-        amountInput.value = "";
-        await fetchSavings();
-      } else {
-        throw new Error(result.message || "Failed to add savings");
-      }
-    } catch (err) {
-      statusMessage.textContent = "Error adding savings. Try again.";
-    }
+  // Update UI progress bar
+  function updateProgress(total) {
+    const pct = Math.min(100, (total / targetSavings) * 100);
+    progressBar.style.width = pct + '%';
+    progressText.textContent = `Saved $${total.toFixed(2)} of $${targetSavings}`;
+    messageBox.textContent = '';
+    messageBox.className = '';
   }
 
-  addButton.addEventListener("click", () => {
-    const amount = parseFloat(amountInput.value);
+  // Submit new savings amount
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const amount = parseFloat(input.value);
     if (isNaN(amount) || amount <= 0) {
-      statusMessage.textContent = "Please enter a valid positive number.";
+      messageBox.textContent = 'Please enter a valid positive amount.';
+      messageBox.className = 'error';
       return;
     }
-    statusMessage.textContent = "Adding savings...";
-    addSavings(amount);
+    messageBox.textContent = 'Submitting...';
+    messageBox.className = '';
+
+    try {
+      const res = await fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify({ amount }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const result = await res.json();
+      if(result.status === 'success') {
+        messageBox.textContent = 'Amount added!';
+        messageBox.className = 'success';
+        input.value = '';
+        loadProgress();
+      } else {
+        messageBox.textContent = 'Error: ' + (result.message || 'Could not add amount');
+        messageBox.className = 'error';
+      }
+    } catch (err) {
+      messageBox.textContent = 'Submission failed: ' + err.message;
+      messageBox.className = 'error';
+    }
   });
 
-  // Load initial savings total on page load
-  fetchSavings();
+  // Initial load
+  loadProgress();
 </script>
-
 </body>
 </html>
