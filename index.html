@@ -79,11 +79,13 @@
 </div>
 
 <script>
-  const API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL'; // paste your URL here
+  // Your provided Google Apps Script Web App URL
+  const API_URL = 'https://script.google.com/macros/s/AKfycbz_4q6_6ERSshUv_UoOQeJPNyURZQzDW57qLhrW43hp0wfRua9WWEVCj9zzy3gMIEJbLQ/C';
 
   async function fetchData() {
     try {
       const res = await fetch(API_URL);
+      if (!res.ok) throw new Error('Network response not ok');
       const data = await res.json();
       return data;
     } catch(e) {
@@ -106,6 +108,7 @@
         body: JSON.stringify({amount}),
         headers: {'Content-Type': 'application/json'}
       });
+      if (!res.ok) throw new Error('Network response not ok');
       const data = await res.json();
       return data;
     } catch(e) {
