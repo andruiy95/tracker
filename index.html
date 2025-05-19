@@ -1,174 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Moving Savings Tracker</title>
-  <style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Move Savings Tracker</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    max-width: 420px;
+    margin: auto;
+  }
+  h1 {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+  .input-group {
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  button {
+    background-color: #007aff;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+    width: 100%;
+  }
+  button:hover {
+    background-color: #005ecb;
+  }
+  .progress-container {
+    width: 100%;
+    background: #ddd;
+    border-radius: 15px;
+    overflow: hidden;
+    height: 22px;
+    margin: 2rem 0 1rem;
+    box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.1);
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #007aff, #00d4ff);
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  .progress-text {
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-align: center;
+    color: #007aff;
+    margin-bottom: 0.5rem;
+  }
+  .status-message {
+    font-size: 0.9rem;
+    color: #cc0000;
+    min-height: 1.2em;
+    margin-top: 0.5rem;
+    text-align: center;
+  }
+  @media (prefers-color-scheme: dark) {
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      background: #f9f9f9;
-      color: #111;
-      padding: 2rem;
-      max-width: 400px;
-      margin: auto;
-    }
-    h1 {
-      font-weight: 600;
-      margin-bottom: 1rem;
-      text-align: center;
+      background: #121212;
+      color: #eee;
     }
     input[type="number"] {
-      width: 100%;
-      padding: 0.75rem;
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-sizing: border-box;
+      background: #222;
+      border-color: #555;
+      color: #eee;
     }
     button {
-      width: 100%;
-      background: #007aff;
-      color: white;
-      font-weight: 600;
-      border: none;
-      padding: 0.75rem;
-      font-size: 1.1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+      background-color: #0a84ff;
     }
     button:hover {
-      background: #005ecb;
+      background-color: #0066cc;
     }
     .progress-container {
-      margin-top: 2rem;
-      background: #e0e0e0;
-      border-radius: 12px;
-      height: 24px;
-      overflow: hidden;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+      background: #333;
+      box-shadow: inset 0 1px 3px rgb(255 255 255 / 0.1);
     }
     .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #007aff, #00d4ff);
-      width: 0%;
-      transition: width 0.5s ease;
-      border-radius: 12px 0 0 12px;
+      background: linear-gradient(90deg, #0a84ff, #5ac8fa);
     }
     .progress-text {
-      margin-top: 0.5rem;
-      text-align: center;
-      font-weight: 600;
+      color: #0a84ff;
     }
-    .status {
-      margin-top: 1rem;
-      text-align: center;
-      font-weight: 500;
-      height: 1.2rem;
+    .status-message {
+      color: #ff6b6b;
     }
-  </style>
+  }
+</style>
 </head>
 <body>
 
-  <h1>Moving Savings Tracker</h1>
-  
-  <input id="amountInput" type="number" min="1" placeholder="Enter amount saved" />
-  <button id="addBtn">Add Savings</button>
-  
-  <div class="progress-container">
-    <div id="progressBar" class="progress-bar"></div>
-  </div>
-  <div class="progress-text" id="progressText">0% of $4,000 goal</div>
-  
-  <div class="status" id="statusMessage"></div>
-  
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbztlCXfMd83xWHlc-pkXn28b2M8BVFOnOPylqoWs0oaJm7-E1mNsfweoVWMswQYXsNwOQ/exec"; // Replace with your Google Apps Script web app URL
-    const GOAL = 4000;
-    
-    const amountInput = document.getElementById("amountInput");
-    const addBtn = document.getElementById("addBtn");
-    const progressBar = document.getElementById("progressBar");
-    const progressText = document.getElementById("progressText");
-    const statusMessage = document.getElementById("statusMessage");
+<h1>Move Savings Tracker</h1>
 
-    // Initialize saved total
-    let savedTotal = 0;
+<div class="progress-text" id="progressText">Loading...</div>
+<div class="progress-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
 
-    // Fetch current savings from Google Sheet
-    async function fetchSavings() {
-      try {
-        // Using Sheets API public CSV export for simplicity:
-        // Construct CSV URL from sheet ID and sheet name
-        const sheetId = "1iTnoksNWB0XleQjoNc0ua3naXQSqw8sA8Ch5wcsn4Ks";
-        const sheetName = "Sheet1";
-        const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
+<div class="input-group">
+  <input
+    type="number"
+    id="amountInput"
+    placeholder="Enter amount saved"
+    min="0.01"
+    step="0.01"
+  />
+</div>
 
-        const response = await fetch(csvUrl);
-        if (!response.ok) throw new Error("Failed to fetch savings data");
+<button id="addButton">Add Savings</button>
 
-        const text = await response.text();
-        const lines = text.trim().split("\n");
-        let total = 0;
+<div class="status-message" id="statusMessage"></div>
 
-        // Skip header, sum amounts in 2nd column
-        for(let i = 1; i < lines.length; i++) {
-          const cols = lines[i].split(",");
-          const amt = parseFloat(cols[1]);
-          if (!isNaN(amt)) total += amt;
-        }
-        savedTotal = total;
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbztlCXfMd83xWHlc-pkXn28b2M8BVFOnOPylqoWs0oaJm7-E1mNsfweoVWMswQYXsNwOQ/exec";
+  const SAVING_GOAL = 4000; // Adjust goal as needed
+
+  const progressBar = document.getElementById("progressBar");
+  const progressText = document.getElementById("progressText");
+  const amountInput = document.getElementById("amountInput");
+  const addButton = document.getElementById("addButton");
+  const statusMessage = document.getElementById("statusMessage");
+
+  let savedTotal = 0;
+
+  // Update the progress bar UI based on savedTotal
+  function updateProgress() {
+    const percent = Math.min((savedTotal / SAVING_GOAL) * 100, 100);
+    progressBar.style.width = percent + "%";
+    progressText.textContent = `Saved $${savedTotal.toFixed(2)} of $${SAVING_GOAL.toFixed(2)} (${percent.toFixed(1)}%)`;
+  }
+
+  // Fetch total savings from Apps Script GET endpoint
+  async function fetchSavings() {
+    try {
+      const response = await fetch(API_URL);
+      const result = await response.json();
+      if (result.status === "success" && typeof result.total === "number") {
+        savedTotal = result.total;
         updateProgress();
-      } catch (err) {
-        statusMessage.textContent = "Error loading savings data.";
+        statusMessage.textContent = "";
+      } else {
+        throw new Error(result.message || "Failed to fetch total");
       }
+    } catch (err) {
+      statusMessage.textContent = "Error loading progress.";
+      progressText.textContent = "Could not load progress.";
+      progressBar.style.width = "0%";
     }
+  }
 
-    // Update progress bar and text
-    function updateProgress() {
-      const percent = Math.min((savedTotal / GOAL) * 100, 100);
-      progressBar.style.width = percent + "%";
-      progressText.textContent = `${percent.toFixed(1)}% of $${GOAL.toLocaleString()} goal ($${savedTotal.toFixed(2)})`;
-    }
-
-    // Add savings to sheet through Apps Script
-    async function addSavings(amount) {
-      try {
-        const response = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({ amount }),
-          headers: { "Content-Type": "application/json" },
-        });
-        const result = await response.json();
-
-        if (result.status === "success") {
-          statusMessage.textContent = "Savings added!";
-          amountInput.value = "";
-          await fetchSavings();
-        } else {
-          statusMessage.textContent = "Error: " + result.message;
-        }
-      } catch (err) {
-        statusMessage.textContent = "Error adding savings. Try again.";
+  // Add new savings via Apps Script POST endpoint
+  async function addSavings(amount) {
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+      const result = await response.json();
+      if (result.status === "success") {
+        statusMessage.textContent = "Savings added successfully!";
+        amountInput.value = "";
+        await fetchSavings();
+      } else {
+        throw new Error(result.message || "Failed to add savings");
       }
+    } catch (err) {
+      statusMessage.textContent = "Error adding savings. Try again.";
     }
+  }
 
-    addBtn.addEventListener("click", () => {
-      const val = parseFloat(amountInput.value);
-      if (isNaN(val) || val <= 0) {
-        statusMessage.textContent = "Please enter a valid positive number.";
-        return;
-      }
-      statusMessage.textContent = "Adding...";
-      addSavings(val);
-    });
+  addButton.addEventListener("click", () => {
+    const amount = parseFloat(amountInput.value);
+    if (isNaN(amount) || amount <= 0) {
+      statusMessage.textContent = "Please enter a valid positive number.";
+      return;
+    }
+    statusMessage.textContent = "Adding savings...";
+    addSavings(amount);
+  });
 
-    // Initial load
-    fetchSavings();
-  </script>
+  // Load initial savings total on page load
+  fetchSavings();
+</script>
 
 </body>
 </html>
