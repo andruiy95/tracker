@@ -3,155 +3,190 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Colorado Move Savings Tracker</title>
+<title>Move Savings Tracker</title>
 <style>
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    background: #f0f2f5;
-    margin: 0; padding: 2rem;
-    display: flex; justify-content: center; align-items: center; height: 100vh;
-  }
-  .container {
-    background: white;
-    padding: 2rem;
-    border-radius: 16px;
-    width: 320px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #333;
   }
   h1 {
-    margin-bottom: 0.5rem;
+    font-weight: 600;
+    margin-bottom: 8px;
   }
-  .progress-bar-container {
+  .progress-container {
+    width: 100%;
+    max-width: 400px;
     background: #ddd;
-    border-radius: 999px;
-    height: 24px;
+    border-radius: 12px;
     overflow: hidden;
-    margin: 1rem 0;
+    height: 24px;
+    margin-bottom: 16px;
+    box-shadow: inset 0 1px 3px rgba(255,255,255,0.7);
   }
   .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #ff6a00, #ee0979);
-    width: 0%;
-    transition: width 0.5s ease;
+    width: 0;
+    background: linear-gradient(90deg, #4caf50, #81c784);
+    border-radius: 12px 0 0 12px;
+    transition: width 0.5s ease-in-out;
+  }
+  .stats {
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+  form {
+    display: flex;
+    gap: 12px;
+    max-width: 400px;
+    width: 100%;
   }
   input[type="number"] {
-    width: 100%;
-    padding: 0.5rem;
-    margin: 1rem 0;
+    flex-grow: 1;
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 2px solid #ccc;
     border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
+    transition: border-color 0.3s;
+    outline-offset: 2px;
+  }
+  input[type="number"]:focus {
+    border-color: #4caf50;
   }
   button {
-    background: #ee0979;
-    color: white;
+    background: #4caf50;
     border: none;
+    color: white;
+    padding: 0 20px;
     border-radius: 8px;
-    padding: 0.75rem 1.25rem;
-    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background-color 0.3s;
   }
-  button:hover {
-    background: #ff6a00;
+  button:hover:not(:disabled) {
+    background: #388e3c;
   }
-  .status {
-    margin-top: 1rem;
-    color: #333;
+  button:disabled {
+    background: #a5d6a7;
+    cursor: not-allowed;
+  }
+  .message {
+    margin-top: 16px;
+    font-weight: 600;
+  }
+  .message.error {
+    color: #d32f2f;
+  }
+  .message.success {
+    color: #388e3c;
   }
 </style>
 </head>
 <body>
-
-<div class="container">
-  <h1>Colorado Move Savings</h1>
-  <div id="status-text">Loading...</div>
-  <div class="progress-bar-container" aria-label="Savings progress">
-    <div class="progress-bar" id="progress-bar"></div>
+  <h1>Move Savings Tracker</h1>
+  <div class="progress-container" aria-label="Savings progress bar">
+    <div class="progress-bar" id="progressBar"></div>
   </div>
-  <div id="amount-text"></div>
+  <div class="stats" id="stats">Loading...</div>
 
-  <input type="number" id="input-amount" placeholder="Add amount saved" min="1" />
-  <button id="submit-btn">Add to Savings</button>
-
-  <div class="status" id="response-message"></div>
-</div>
+  <form id="savingsForm" aria-label="Add savings form">
+    <input
+      type="number"
+      id="amountInput"
+      name="amount"
+      placeholder="Add savings amount"
+      min="1"
+      step="0.01"
+      required
+      aria-required="true"
+      aria-describedby="formHelp"
+    />
+    <button type="submit" id="submitBtn">Add</button>
+  </form>
+  <div id="formHelp" class="message" aria-live="polite"></div>
 
 <script>
-  // Your provided Google Apps Script Web App URL
-  const API_URL = 'https://script.google.com/macros/s/AKfycbz_4q6_6ERSshUv_UoOQeJPNyURZQzDW57qLhrW43hp0wfRua9WWEVCj9zzy3gMIEJbLQ/C';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyvXpnSoK6B4DfoLDBekk4RUENKp8z12JA7qqq5WZJbT0V2SHb9yaw9WXHxIhm3N11oxA/exec';
 
-  async function fetchData() {
+  const progressBar = document.getElementById('progressBar');
+  const stats = document.getElementById('stats');
+  const form = document.getElementById('savingsForm');
+  const amountInput = document.getElementById('amountInput');
+  const formHelp = document.getElementById('formHelp');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // Fetch and update progress display
+  async function fetchProgress() {
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error('Network response not ok');
-      const data = await res.json();
-      return data;
-    } catch(e) {
-      console.error('Fetch error:', e);
-      return null;
+      const response = await fetch(API_URL);
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+
+      const goal = Number(data.goal);
+      const saved = Number(data.saved);
+      const percent = Math.min(100, (saved / goal) * 100);
+
+      progressBar.style.width = percent + '%';
+      progressBar.style.borderRadius = percent === 100 ? '12px' : '12px 0 0 12px';
+
+      stats.textContent = `Saved: $${saved.toFixed(2)} / Goal: $${goal.toFixed(2)} (${percent.toFixed(1)}%)`;
+
+      formHelp.textContent = '';
+    } catch (err) {
+      stats.textContent = 'Error loading progress.';
+      formHelp.textContent = '';
     }
   }
 
-  function updateUI({goal, saved}) {
-    const percent = Math.min(100, Math.round((saved / goal) * 100));
-    document.getElementById('progress-bar').style.width = percent + '%';
-    document.getElementById('amount-text').textContent = `$${saved} saved of $${goal} goal (${percent}%)`;
-    document.getElementById('status-text').textContent = 'Keep going, you got this!';
-  }
+  // Add new savings entry
+  async function addSavings(amount) {
+    submitBtn.disabled = true;
+    formHelp.textContent = 'Submitting...';
 
-  async function addAmount(amount) {
     try {
-      const res = await fetch(API_URL, {
+      const response = await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({amount}),
-        headers: {'Content-Type': 'application/json'}
+        body: JSON.stringify({ amount }),
+        headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) throw new Error('Network response not ok');
-      const data = await res.json();
-      return data;
-    } catch(e) {
-      console.error('Add amount error:', e);
-      return null;
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        formHelp.textContent = 'Savings added successfully!';
+        formHelp.className = 'message success';
+        amountInput.value = '';
+        await fetchProgress();
+      } else {
+        throw new Error(data.message || 'Unknown error');
+      }
+    } catch (err) {
+      formHelp.textContent = `Error adding savings: ${err.message}`;
+      formHelp.className = 'message error';
+    } finally {
+      submitBtn.disabled = false;
     }
   }
 
-  async function refresh() {
-    const data = await fetchData();
-    if (data) {
-      updateUI(data);
-    } else {
-      document.getElementById('status-text').textContent = 'Failed to load data.';
-    }
-  }
-
-  document.getElementById('submit-btn').addEventListener('click', async () => {
-    const input = document.getElementById('input-amount');
-    const val = Number(input.value);
-    const responseEl = document.getElementById('response-message');
-    responseEl.textContent = '';
-
-    if (!val || val <= 0) {
-      responseEl.textContent = 'Please enter a positive number.';
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const amount = parseFloat(amountInput.value);
+    if (isNaN(amount) || amount <= 0) {
+      formHelp.textContent = 'Please enter a valid positive amount.';
+      formHelp.className = 'message error';
       return;
     }
-
-    responseEl.textContent = 'Submitting...';
-
-    const res = await addAmount(val);
-    if (res && res.status === 'success') {
-      responseEl.textContent = `Added $${val} to savings!`;
-      input.value = '';
-      refresh();
-    } else {
-      responseEl.textContent = 'Error adding savings. Try again.';
-    }
+    addSavings(amount);
   });
 
-  // Initial load
-  refresh();
+  // Initial fetch
+  fetchProgress();
 </script>
-
 </body>
 </html>
